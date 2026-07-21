@@ -1,0 +1,84 @@
+{
+  "search_id": "test-search-id",
+  "currency": "USD",
+  "data": [
+    {
+      "id": "kiwi-1",
+      "flyFrom": "JFK",
+      "flyTo": "DEN",
+      "cityFrom": "New York",
+      "cityTo": "Denver",
+      "price": 300,
+      "conversion": { "USD": 300 },
+      "duration": { "departure": 16200, "return": 13500, "total": 29700 },
+      "route": [
+        {
+          "flyFrom": "JFK",
+          "flyTo": "DEN",
+          "local_departure": "2025-09-11T14:30:00.000Z",
+          "local_arrival": "2025-09-11T17:00:00.000Z",
+          "airline": "UA",
+          "flight_no": 1701,
+          "return": 0
+        },
+        {
+          "flyFrom": "DEN",
+          "flyTo": "JFK",
+          "local_departure": "2025-09-14T18:00:00.000Z",
+          "local_arrival": "2025-09-14T20:30:00.000Z",
+          "airline": "UA",
+          "flight_no": 1702,
+          "return": 1
+        }
+      ]
+    },
+    {
+      "id": "kiwi-2",
+      "flyFrom": "JFK",
+      "flyTo": "DEN",
+      "cityFrom": "New York",
+      "cityTo": "Denver",
+      "price": 388,
+      "conversion": { "USD": 388 },
+      "duration": { "departure": 24900, "return": 22200, "total": 47100 },
+      "route": [
+        {
+          "flyFrom": "JFK",
+          "flyTo": "ORD",
+          "local_departure": "2025-09-11T15:10:00.000Z",
+          "local_arrival": "2025-09-11T16:55:00.000Z",
+          "airline": "AA",
+          "flight_no": 355,
+          "return": 0
+        },
+        {
+          "flyFrom": "ORD",
+          "flyTo": "DEN",
+          "local_departure": "2025-09-11T18:20:00.000Z",
+          "local_arrival": "2025-09-11T20:05:00.000Z",
+          "airline": "AA",
+          "flight_no": 612,
+          "return": 0
+        },
+        {
+          "flyFrom": "DEN",
+          "flyTo": "ORD",
+          "local_departure": "2025-09-14T16:00:00.000Z",
+          "local_arrival": "2025-09-14T19:25:00.000Z",
+          "airline": "AA",
+          "flight_no": 613,
+          "return": 1
+        },
+        {
+          "flyFrom": "ORD",
+          "flyTo": "JFK",
+          "local_departure": "2025-09-14T20:40:00.000Z",
+          "local_arrival": "2025-09-14T23:10:00.000Z",
+          "airline": "AA",
+          "flight_no": 356,
+          "return": 1
+        }
+      ]
+    }
+  ]
+}
