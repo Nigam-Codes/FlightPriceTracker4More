@@ -1,0 +1,51 @@
+# converge-flights example config
+#
+# Scenario: a couple living apart wants to vacation together in Denver.
+#   * One lives in the NYC metro (candidate airports LGA / JFK / EWR)
+#   * One lives near Detroit (DTW)
+# They want long weekends across Sep–Dec 2025: depart Thursday afternoon,
+# return Sunday evening, at most one stop, at most 10 hours per direction.
+# We run BOTH providers and keep the cheapest qualifying offer per traveler.
+
+travelers:
+  - name: Alex
+    origin_airports: [LGA, JFK, EWR]   # cheapest qualifying one wins
+  - name: Sam
+    origin_airports: [DTW]
+
+destination: DEN
+
+date_windows:
+  # A recurring weekly rule: every Thursday -> the following Sunday.
+  recurring:
+    depart_weekday: thursday
+    return_weekday: sunday
+    start: 2025-09-11
+    end: 2025-12-31
+  # Alternatively, list windows explicitly (set one OR the other, not both):
+  # explicit:
+  #   - depart: 2025-09-11
+  #     return: 2025-09-14
+  #   - depart: 2025-09-18
+  #     return: 2025-09-21
+
+constraints:
+  max_stops: 1
+  max_duration_hours: 10          # per direction
+  depart_time_window:             # local outbound departure (Thursday afternoon)
+    start: "12:00"
+    end: "18:00"
+  return_arrive_by: "21:00"       # local inbound arrival (Sunday evening)
+  cabin: economy
+  currency: USD
+
+# amadeus | kiwi | both
+provider: both
+
+cache:
+  enabled: true
+  directory: .cache/converge_flights
+  ttl_hours: 24
+
+# Set true to also write raw provider JSON alongside the workbook.
+raw_dump: false
