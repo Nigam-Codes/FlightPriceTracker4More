@@ -27,6 +27,12 @@ def kiwi_payload() -> dict[str, Any]:
     return json.loads((FIXTURES / "kiwi_response.json").read_text())
 
 
+@pytest.fixture
+def duffel_payload() -> dict[str, Any]:
+    """Recorded Duffel offer-request response (with embedded offers)."""
+    return json.loads((FIXTURES / "duffel_offer_request.json").read_text())
+
+
 def make_leg(
     *,
     origin: str = "JFK",

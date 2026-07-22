@@ -9,15 +9,36 @@ date windows, applies shared constraints, and produces a comparison showing
 **total group cost per date option** plus per-person breakdowns — so the group
 can pick the cheapest weekend to travel.
 
-- **Two providers, one model:** Amadeus (Self-Service) and Kiwi.com (Tequila).
-  Run either, or run **both** and keep the cheapest qualifying offer per
-  traveler across providers.
+- **Three providers, one model:** Amadeus (Self-Service), Kiwi.com (Tequila),
+  and Duffel. Run any one, or a list of several, and keep the cheapest
+  qualifying offer per traveler across all of them.
 - **Provider-agnostic filtering:** every raw response is normalized into a
   shared `Offer`; constraints (stops, duration, departure/arrival times) are
   enforced on that normalized layer, so filtering is identical regardless of
   source.
 - **Outputs:** a ranked terminal table (`rich`), an Excel workbook with charts
   (`openpyxl`), and an optional raw-JSON dump per provider.
+
+---
+
+## The flights-API landscape (why these providers)
+
+Real fare data comes from three kinds of source, and this tool is built to plug
+in any of them behind one interface:
+
+- **GDS** (Amadeus, Sabre, Travelport) — broad airline content; Amadeus offers a
+  free self-serve Self-Service tier, while Sabre/Travelport are partner-gated
+  (contracts + certification).
+- **Aggregators / metasearch** (Kiwi.com/Tequila, Travelpayouts) — cross-airline
+  search, self-serve keys.
+- **Direct airline / NDC** — modern APIs such as **Duffel** blend airline + NDC
+  content over clean JSON REST with an instant self-serve token.
+
+`converge-flights` ships adapters for the three self-serve options — **Amadeus,
+Kiwi, and Duffel** — each normalizing into the same `Offer`. Adding another
+source (a GDS, Travelpayouts, etc.) is just another adapter. **Booking flows**
+(pricing confirmation, PNR creation, ticketing, post-booking changes) are out of
+scope: this tool is search-and-compare only.
 
 ---
 
@@ -54,6 +75,15 @@ pip install -e ".[dev]"      # drop [dev] if you don't need tests/linters
 2. Create a **Search API** key — issued instantly, no card required.
 3. Copy it into `KIWI_API_KEY`.
 
+### Duffel
+
+1. Create a free account at <https://app.duffel.com> (no card).
+2. Copy an **access token** from your dashboard into `DUFFEL_API_TOKEN`.
+3. Test tokens (`duffel_test_…`) return sandbox content; live tokens
+   (`duffel_live_…`) return real airline + NDC fares.
+
+You only need keys for the provider(s) you actually run.
+
 ### Provide the credentials
 
 Copy `.env.example` to `.env` and fill in the values (the file is git-ignored):
@@ -67,6 +97,7 @@ $EDITOR .env
 AMADEUS_CLIENT_ID=xxxxxxxxxxxxxxxx
 AMADEUS_CLIENT_SECRET=xxxxxxxxxxxxxxxx
 KIWI_API_KEY=xxxxxxxxxxxxxxxx
+DUFFEL_API_TOKEN=duffel_test_xxxxxxxxxxxxxxxx
 # Optional: live Amadeus fares
 # AMADEUS_BASE_URL=https://api.amadeus.com
 ```
@@ -85,7 +116,7 @@ cp config.example.yaml config.yaml
 The bundled example encodes the reference scenario: a couple — NYC
 (**LGA/JFK/EWR**) and Detroit (**DTW**) — flying to Denver (**DEN**), every
 Thursday-afternoon-to-Sunday-evening weekend from September to December, at
-most one stop, at most ten hours per direction, running **both** providers.
+most one stop, at most ten hours per direction, running **all three** providers.
 
 ```yaml
 travelers:
@@ -111,8 +142,12 @@ constraints:
   cabin: economy
   currency: USD
 
-provider: both                          # amadeus | kiwi | both
+# Single value (amadeus | kiwi | duffel | both), or a list to run several and
+# keep the cheapest qualifying offer per traveler across all of them:
+provider: [amadeus, kiwi, duffel]
 ```
+
+`provider: both` remains a backward-compatible alias for `[amadeus, kiwi]`.
 
 Prefer explicit dates? Swap the `recurring` block for an `explicit` list
 (set exactly one of the two):
@@ -197,7 +232,8 @@ converge_flights/
 └── providers/
     ├── base.py          # FlightProvider protocol + HTTP backoff helper
     ├── amadeus.py       # Amadeus Self-Service provider
-    └── kiwi.py          # Kiwi.com (Tequila) provider
+    ├── kiwi.py          # Kiwi.com (Tequila) provider
+    └── duffel.py        # Duffel (airline + NDC) provider
 tests/                   # fully offline, recorded fixtures for both providers
 config.example.yaml
 ```

@@ -12,6 +12,7 @@ import pytest
 from converge_flights.config import Constraints
 from converge_flights.providers.amadeus import AmadeusProvider
 from converge_flights.providers.base import MissingCredentialsError
+from converge_flights.providers.duffel import DuffelProvider
 from converge_flights.providers.kiwi import KiwiProvider
 
 DEPART = date(2025, 9, 11)
@@ -87,6 +88,32 @@ def test_kiwi_search_offline(kiwi_payload: dict[str, Any]) -> None:
 
 def test_kiwi_missing_credentials() -> None:
     provider = KiwiProvider(client=httpx.Client(), api_key=None)
+    with pytest.raises(MissingCredentialsError):
+        provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
+
+
+def _duffel_transport(payload: dict[str, Any]) -> httpx.MockTransport:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path.endswith("/air/offer_requests")
+        assert request.headers["Authorization"] == "Bearer fake-token"
+        assert request.headers["Duffel-Version"] == "v2"
+        assert request.url.params.get("return_offers") == "true"
+        return httpx.Response(201, json=payload)
+
+    return httpx.MockTransport(handler)
+
+
+def test_duffel_search_offline(duffel_payload: dict[str, Any]) -> None:
+    client = httpx.Client(transport=_duffel_transport(duffel_payload))
+    provider = DuffelProvider(client=client, api_token="fake-token", version="v2")
+    offers = provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
+    assert len(offers) == 2
+    assert offers[0].provider == "duffel"
+    assert str(offers[0].price) == "300.00"
+
+
+def test_duffel_missing_credentials() -> None:
+    provider = DuffelProvider(client=httpx.Client(), api_token=None)
     with pytest.raises(MissingCredentialsError):
         provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
 

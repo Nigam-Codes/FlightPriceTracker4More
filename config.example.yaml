@@ -39,8 +39,12 @@ constraints:
   cabin: economy
   currency: USD
 
-# amadeus | kiwi | both
-provider: both
+# Which backend(s) to run. Either a single value:
+#   provider: amadeus        # or: kiwi | duffel
+#   provider: both           # alias for [amadeus, kiwi]
+# ...or a list to run several and keep the cheapest qualifying offer per
+# traveler across all of them:
+provider: [amadeus, kiwi, duffel]
 
 cache:
   enabled: true

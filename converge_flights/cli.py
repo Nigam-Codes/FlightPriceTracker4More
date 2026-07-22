@@ -151,7 +151,7 @@ def search(
         console.print(
             f"Searching [bold]{len(windows)}[/] windows × "
             f"[bold]{len(traveler_names)}[/] travelers via "
-            f"[bold]{cfg.provider.value}[/] …"
+            f"[bold]{', '.join(cfg.selected_providers)}[/] …"
         )
         report = compare(providers, windows, cfg)
     except MissingCredentialsError as exc:
