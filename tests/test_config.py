@@ -24,6 +24,7 @@ def test_scalar_provider() -> None:
     assert _config("amadeus").selected_providers == ["amadeus"]
     assert _config("kiwi").selected_providers == ["kiwi"]
     assert _config("duffel").selected_providers == ["duffel"]
+    assert _config("serpapi").selected_providers == ["serpapi"]
 
 
 def test_both_alias_expands() -> None:
@@ -31,6 +32,7 @@ def test_both_alias_expands() -> None:
 
 
 def test_list_provider() -> None:
+    assert _config(["serpapi", "duffel"]).selected_providers == ["serpapi", "duffel"]
     assert _config(["amadeus", "duffel"]).selected_providers == ["amadeus", "duffel"]
     assert _config(["duffel", "kiwi", "amadeus"]).selected_providers == [
         "duffel",

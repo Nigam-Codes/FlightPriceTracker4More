@@ -10,6 +10,7 @@ from converge_flights.providers.amadeus import AmadeusProvider
 from converge_flights.providers.base import FlightProvider
 from converge_flights.providers.duffel import DuffelProvider
 from converge_flights.providers.kiwi import KiwiProvider
+from converge_flights.providers.serpapi import SerpApiProvider
 
 
 def _make_provider(
@@ -26,6 +27,8 @@ def _make_provider(
         return KiwiProvider(client=client, cache=cache, raw_sink=raw_sink)
     if name == "duffel":
         return DuffelProvider(client=client, cache=cache, raw_sink=raw_sink)
+    if name == "serpapi":
+        return SerpApiProvider(client=client, cache=cache, raw_sink=raw_sink)
     raise ValueError(f"Unknown provider: {name!r}")
 
 
@@ -58,5 +61,6 @@ __all__ = [
     "DuffelProvider",
     "FlightProvider",
     "KiwiProvider",
+    "SerpApiProvider",
     "build_providers",
 ]

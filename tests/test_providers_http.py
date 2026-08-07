@@ -14,6 +14,7 @@ from converge_flights.providers.amadeus import AmadeusProvider
 from converge_flights.providers.base import MissingCredentialsError
 from converge_flights.providers.duffel import DuffelProvider
 from converge_flights.providers.kiwi import KiwiProvider
+from converge_flights.providers.serpapi import SerpApiProvider
 
 DEPART = date(2025, 9, 11)
 RETURN = date(2025, 9, 14)
@@ -114,6 +115,54 @@ def test_duffel_search_offline(duffel_payload: dict[str, Any]) -> None:
 
 def test_duffel_missing_credentials() -> None:
     provider = DuffelProvider(client=httpx.Client(), api_token=None)
+    with pytest.raises(MissingCredentialsError):
+        provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
+
+
+def _serpapi_transport(
+    outbound: dict[str, Any], returns: dict[str, Any], calls: dict[str, int]
+) -> httpx.MockTransport:
+    """Serve call-1 vs call-2 based on the presence of departure_token."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.params.get("api_key") == "fake-key"
+        assert request.url.params.get("engine") == "google_flights"
+        if request.url.params.get("departure_token"):
+            calls["return"] += 1
+            return httpx.Response(200, json=returns)
+        calls["outbound"] += 1
+        return httpx.Response(200, json=outbound)
+
+    return httpx.MockTransport(handler)
+
+
+def test_serpapi_two_call_round_trip(
+    serpapi_outbound_payload: dict[str, Any],
+    serpapi_return_payload: dict[str, Any],
+) -> None:
+    calls = {"outbound": 0, "return": 0}
+    client = httpx.Client(
+        transport=_serpapi_transport(
+            serpapi_outbound_payload, serpapi_return_payload, calls
+        )
+    )
+    provider = SerpApiProvider(client=client, api_key="fake-key")
+    offers = provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
+
+    # One outbound search + exactly one return lookup (quota-friendly default).
+    assert calls == {"outbound": 1, "return": 1}
+    assert len(offers) == 2  # two return options for the cheapest outbound
+    best = min(offers, key=lambda o: o.price)
+    assert best.provider == "serpapi"
+    assert str(best.price) == "300"
+    assert best.outbound.stops == 0
+    assert best.outbound.duration_hours == 4.5
+    assert best.inbound.duration_hours == 3.75
+    assert best.carrier == "UA"
+
+
+def test_serpapi_missing_credentials() -> None:
+    provider = SerpApiProvider(client=httpx.Client(), api_key=None)
     with pytest.raises(MissingCredentialsError):
         provider.search("JFK", "DEN", DEPART, RETURN, CONSTRAINTS)
 

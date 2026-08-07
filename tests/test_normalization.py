@@ -1,14 +1,18 @@
-"""Prove both providers normalize their raw JSON to identical Offer fields."""
+"""Prove every provider normalizes its raw JSON to identical Offer fields."""
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
+
+import httpx
 
 from converge_flights.config import Cabin, Constraints
 from converge_flights.filters import cheapest, filter_offers
 from converge_flights.providers.amadeus import AmadeusProvider
 from converge_flights.providers.duffel import DuffelProvider
 from converge_flights.providers.kiwi import KiwiProvider
+from converge_flights.providers.serpapi import SerpApiProvider
 
 LENIENT = Constraints(
     max_stops=2,
@@ -59,10 +63,41 @@ def test_duffel_normalizes_offer(duffel_payload: dict[str, Any]) -> None:
     assert best.carrier == "UA"
 
 
+def _serpapi_offers(outbound: dict[str, Any], returns: dict[str, Any]) -> list[Any]:
+    """Run SerpApi's two-call search against recorded fixtures (offline)."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.params.get("departure_token"):
+            return httpx.Response(200, json=returns)
+        return httpx.Response(200, json=outbound)
+
+    provider = SerpApiProvider(
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        api_key="fake-key",
+    )
+    return provider.search("JFK", "DEN", date(2025, 9, 11), date(2025, 9, 14), LENIENT)
+
+
+def test_serpapi_normalizes_offer(
+    serpapi_outbound_payload: dict[str, Any],
+    serpapi_return_payload: dict[str, Any],
+) -> None:
+    offers = _serpapi_offers(serpapi_outbound_payload, serpapi_return_payload)
+    best = cheapest(filter_offers(offers, LENIENT))
+    assert best is not None
+    assert best.provider == "serpapi"
+    assert best.outbound.stops == 0
+    assert best.outbound.duration_hours == 4.5
+    assert best.inbound.duration_hours == 3.75
+    assert best.carrier == "UA"
+
+
 def test_all_providers_map_to_identical_offer_fields(
     amadeus_payload: dict[str, Any],
     kiwi_payload: dict[str, Any],
     duffel_payload: dict[str, Any],
+    serpapi_outbound_payload: dict[str, Any],
+    serpapi_return_payload: dict[str, Any],
 ) -> None:
     """The canonical trip must normalize identically across all providers.
 
@@ -95,6 +130,12 @@ def test_all_providers_map_to_identical_offer_fields(
                 LENIENT,
             )
         ),
+        "serpapi": cheapest(
+            filter_offers(
+                _serpapi_offers(serpapi_outbound_payload, serpapi_return_payload),
+                LENIENT,
+            )
+        ),
     }
 
     ignore = {"provider", "raw_id"}
@@ -103,4 +144,4 @@ def test_all_providers_map_to_identical_offer_fields(
         assert offer is not None, f"{name} produced no qualifying offer"
         dumps[name] = offer.model_dump(exclude=ignore)
 
-    assert dumps["amadeus"] == dumps["kiwi"] == dumps["duffel"]
+    assert dumps["amadeus"] == dumps["kiwi"] == dumps["duffel"] == dumps["serpapi"]

@@ -25,6 +25,7 @@ class Provider(str, enum.Enum):
     AMADEUS = "amadeus"
     KIWI = "kiwi"
     DUFFEL = "duffel"
+    SERPAPI = "serpapi"
     BOTH = "both"
 
 
@@ -241,10 +242,19 @@ DUFFEL_CABIN: dict[Cabin, str] = {
     Cabin.FIRST: "first",
 }
 
+# SerpApi Google Flights uses integer ``travel_class`` codes.
+SERPAPI_CABIN: dict[Cabin, int] = {
+    Cabin.ECONOMY: 1,
+    Cabin.PREMIUM_ECONOMY: 2,
+    Cabin.BUSINESS: 3,
+    Cabin.FIRST: 4,
+}
+
 __all__ = [
     "AMADEUS_CABIN",
     "DUFFEL_CABIN",
     "KIWI_CABIN",
+    "SERPAPI_CABIN",
     "Cabin",
     "CacheConfig",
     "Config",

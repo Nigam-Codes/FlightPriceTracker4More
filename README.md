@@ -9,9 +9,9 @@ date windows, applies shared constraints, and produces a comparison showing
 **total group cost per date option** plus per-person breakdowns — so the group
 can pick the cheapest weekend to travel.
 
-- **Three providers, one model:** Amadeus (Self-Service), Kiwi.com (Tequila),
-  and Duffel. Run any one, or a list of several, and keep the cheapest
-  qualifying offer per traveler across all of them.
+- **Four providers, one model:** SerpApi (Google Flights), Duffel, and the
+  legacy Amadeus/Kiwi adapters. Run any one, or a list of several, and keep the
+  cheapest qualifying offer per traveler across all of them.
 - **Provider-agnostic filtering:** every raw response is normalized into a
   shared `Offer`; constraints (stops, duration, departure/arrival times) are
   enforced on that normalized layer, so filtering is identical regardless of
@@ -23,20 +23,27 @@ can pick the cheapest weekend to travel.
 
 ## The flights-API landscape (why these providers)
 
-Real fare data comes from three kinds of source, and this tool is built to plug
-in any of them behind one interface:
+Real fare data comes from a few kinds of source, and this tool plugs any of them
+in behind one interface:
 
-- **GDS** (Amadeus, Sabre, Travelport) — broad airline content; Amadeus offers a
-  free self-serve Self-Service tier, while Sabre/Travelport are partner-gated
-  (contracts + certification).
-- **Aggregators / metasearch** (Kiwi.com/Tequila, Travelpayouts) — cross-airline
-  search, self-serve keys.
+- **Metasearch as an API** — **SerpApi's Google Flights engine** returns real,
+  current Google Flights fares as licensed structured JSON (no scraping). This
+  is the recommended default.
 - **Direct airline / NDC** — modern APIs such as **Duffel** blend airline + NDC
   content over clean JSON REST with an instant self-serve token.
+- **GDS** (Amadeus, Sabre, Travelport) and **aggregators** (Kiwi/Tequila) — the
+  original adapters. **As of 2026 these are largely closed**: the Amadeus
+  Self-Service sandbox shut down (2026-07-17) and Kiwi/Tequila is now
+  partner-invite only. The adapters remain for anyone who still has access, but
+  are no longer the default path.
 
-`converge-flights` ships adapters for the three self-serve options — **Amadeus,
-Kiwi, and Duffel** — each normalizing into the same `Offer`. Adding another
-source (a GDS, Travelpayouts, etc.) is just another adapter. **Booking flows**
+> **Scraping sites like Expedia or Google Flights directly is intentionally not
+> supported** — it violates their terms of service, is defeated by anti-bot
+> defenses, and is unreliable. SerpApi is the licensed, compliant way to get the
+> same web-sourced fares.
+
+`converge-flights` ships adapters for all four; each normalizes into the same
+`Offer`, so adding another source is just another adapter. **Booking flows**
 (pricing confirmation, PNR creation, ticketing, post-booking changes) are out of
 scope: this tool is search-and-compare only.
 
@@ -53,7 +60,28 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"      # drop [dev] if you don't need tests/linters
 ```
 
-## Get free API keys (no credit card for either)
+## Get a free API key (no credit card)
+
+### SerpApi — Google Flights (recommended)
+
+1. Sign up at <https://serpapi.com/users/sign_up> (free plan, ~100 searches/month,
+   no card).
+2. Verify your email (phone verification may be required to activate searches).
+3. Copy your key from <https://serpapi.com/manage-api-key> into `SERPAPI_API_KEY`.
+
+Each round-trip weekend costs ~2 SerpApi calls (outbound + return leg), and
+results are cached on disk so re-runs don't burn quota.
+
+### Duffel
+
+1. Create a free account at <https://app.duffel.com> (no card).
+2. Copy an **access token** into `DUFFEL_API_TOKEN` (test `duffel_test_…` =
+   sandbox; live `duffel_live_…` = real fares).
+
+### Legacy: Amadeus / Kiwi (largely closed in 2026)
+
+> The Amadeus Self-Service sandbox shut down (2026-07-17) and Kiwi/Tequila is
+> partner-invite only. These sections apply only if you already have access.
 
 ### Amadeus (Self-Service)
 
@@ -75,13 +103,6 @@ pip install -e ".[dev]"      # drop [dev] if you don't need tests/linters
 2. Create a **Search API** key — issued instantly, no card required.
 3. Copy it into `KIWI_API_KEY`.
 
-### Duffel
-
-1. Create a free account at <https://app.duffel.com> (no card).
-2. Copy an **access token** from your dashboard into `DUFFEL_API_TOKEN`.
-3. Test tokens (`duffel_test_…`) return sandbox content; live tokens
-   (`duffel_live_…`) return real airline + NDC fares.
-
 You only need keys for the provider(s) you actually run.
 
 ### Provide the credentials
@@ -94,10 +115,12 @@ $EDITOR .env
 ```
 
 ```dotenv
+SERPAPI_API_KEY=xxxxxxxxxxxxxxxx
+DUFFEL_API_TOKEN=duffel_test_xxxxxxxxxxxxxxxx
+# Legacy (only if you still have access):
 AMADEUS_CLIENT_ID=xxxxxxxxxxxxxxxx
 AMADEUS_CLIENT_SECRET=xxxxxxxxxxxxxxxx
 KIWI_API_KEY=xxxxxxxxxxxxxxxx
-DUFFEL_API_TOKEN=duffel_test_xxxxxxxxxxxxxxxx
 # Optional: live Amadeus fares
 # AMADEUS_BASE_URL=https://api.amadeus.com
 ```
@@ -142,9 +165,9 @@ constraints:
   cabin: economy
   currency: USD
 
-# Single value (amadeus | kiwi | duffel | both), or a list to run several and
-# keep the cheapest qualifying offer per traveler across all of them:
-provider: [amadeus, kiwi, duffel]
+# Single value (serpapi | duffel | amadeus | kiwi | both), or a list to run
+# several and keep the cheapest qualifying offer per traveler across all of them:
+provider: [serpapi, duffel]
 ```
 
 `provider: both` remains a backward-compatible alias for `[amadeus, kiwi]`.
@@ -231,9 +254,10 @@ converge_flights/
 ├── cli.py               # typer CLI (converge-flights search ...)
 └── providers/
     ├── base.py          # FlightProvider protocol + HTTP backoff helper
-    ├── amadeus.py       # Amadeus Self-Service provider
-    ├── kiwi.py          # Kiwi.com (Tequila) provider
-    └── duffel.py        # Duffel (airline + NDC) provider
+    ├── amadeus.py       # Amadeus Self-Service provider (legacy)
+    ├── kiwi.py          # Kiwi.com (Tequila) provider (legacy)
+    ├── duffel.py        # Duffel (airline + NDC) provider
+    └── serpapi.py       # SerpApi Google Flights provider (recommended)
 tests/                   # fully offline, recorded fixtures for both providers
 config.example.yaml
 ```
