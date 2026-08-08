@@ -27,6 +27,24 @@ def kiwi_payload() -> dict[str, Any]:
     return json.loads((FIXTURES / "kiwi_response.json").read_text())
 
 
+@pytest.fixture
+def duffel_payload() -> dict[str, Any]:
+    """Recorded Duffel offer-request response (with embedded offers)."""
+    return json.loads((FIXTURES / "duffel_offer_request.json").read_text())
+
+
+@pytest.fixture
+def serpapi_outbound_payload() -> dict[str, Any]:
+    """Recorded SerpApi Google Flights call-1 (outbound + departure_token)."""
+    return json.loads((FIXTURES / "serpapi_outbound.json").read_text())
+
+
+@pytest.fixture
+def serpapi_return_payload() -> dict[str, Any]:
+    """Recorded SerpApi Google Flights call-2 (return options)."""
+    return json.loads((FIXTURES / "serpapi_return.json").read_text())
+
+
 def make_leg(
     *,
     origin: str = "JFK",

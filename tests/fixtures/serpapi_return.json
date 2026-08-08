@@ -1,0 +1,65 @@
+{
+  "search_metadata": { "status": "Success" },
+  "search_parameters": {
+    "engine": "google_flights",
+    "departure_id": "JFK",
+    "arrival_id": "DEN",
+    "outbound_date": "2025-09-11",
+    "return_date": "2025-09-14",
+    "currency": "USD",
+    "type": "1",
+    "departure_token": "tok_ua"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Denver International Airport",
+            "id": "DEN",
+            "time": "2025-09-14 18:00"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "time": "2025-09-14 20:30"
+          },
+          "duration": 225,
+          "airline": "United",
+          "flight_number": "UA 1702",
+          "travel_class": "Economy"
+        }
+      ],
+      "total_duration": 225,
+      "price": 300,
+      "type": "Round trip",
+      "booking_token": "book_ua"
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Denver International Airport",
+            "id": "DEN",
+            "time": "2025-09-14 12:00"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "time": "2025-09-14 14:35"
+          },
+          "duration": 235,
+          "airline": "United",
+          "flight_number": "UA 1750",
+          "travel_class": "Economy"
+        }
+      ],
+      "total_duration": 235,
+      "price": 318,
+      "type": "Round trip",
+      "booking_token": "book_ua2"
+    }
+  ]
+}

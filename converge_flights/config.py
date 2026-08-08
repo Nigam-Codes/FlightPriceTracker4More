@@ -16,11 +16,23 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Provider(str, enum.Enum):
-    """Selectable flight-price backend(s)."""
+    """Selectable flight-price backend(s).
+
+    ``BOTH`` is a backward-compatible alias for ``[amadeus, kiwi]``. To run any
+    other combination (including ``duffel``), give ``provider`` a list.
+    """
 
     AMADEUS = "amadeus"
     KIWI = "kiwi"
+    DUFFEL = "duffel"
+    SERPAPI = "serpapi"
     BOTH = "both"
+
+
+# Aliases expand to concrete provider names; anything not listed maps to itself.
+_PROVIDER_ALIASES: dict[Provider, list[str]] = {
+    Provider.BOTH: [Provider.AMADEUS.value, Provider.KIWI.value],
+}
 
 
 class Cabin(str, enum.Enum):
@@ -166,7 +178,7 @@ class Config(BaseModel):
     destination: str
     date_windows: DateWindowsConfig
     constraints: Constraints = Constraints()
-    provider: Provider = Provider.AMADEUS
+    provider: Provider | list[Provider] = Provider.AMADEUS
     cache: CacheConfig = CacheConfig()
     raw_dump: bool = Field(
         default=False, description="If true, dump raw provider JSON alongside output."
@@ -177,7 +189,25 @@ class Config(BaseModel):
         names = [t.name for t in self.travelers]
         if len(names) != len(set(names)):
             raise ValueError("traveler names must be unique")
+        if not self.selected_providers:
+            raise ValueError("provider must select at least one backend")
         return self
+
+    @property
+    def selected_providers(self) -> list[str]:
+        """Concrete provider names to run, order-preserving and de-duplicated.
+
+        Accepts ``provider`` as a single value or a list, expands the ``both``
+        alias to ``[amadeus, kiwi]``, and drops duplicates so a config like
+        ``[both, duffel]`` yields ``["amadeus", "kiwi", "duffel"]``.
+        """
+        raw = self.provider if isinstance(self.provider, list) else [self.provider]
+        out: list[str] = []
+        for p in raw:
+            for name in _PROVIDER_ALIASES.get(p, [p.value]):
+                if name not in out:
+                    out.append(name)
+        return out
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Config:
@@ -204,9 +234,27 @@ KIWI_CABIN: dict[Cabin, str] = {
     Cabin.FIRST: "F",
 }
 
+# Duffel uses these ``cabin_class`` strings (they match our enum values).
+DUFFEL_CABIN: dict[Cabin, str] = {
+    Cabin.ECONOMY: "economy",
+    Cabin.PREMIUM_ECONOMY: "premium_economy",
+    Cabin.BUSINESS: "business",
+    Cabin.FIRST: "first",
+}
+
+# SerpApi Google Flights uses integer ``travel_class`` codes.
+SERPAPI_CABIN: dict[Cabin, int] = {
+    Cabin.ECONOMY: 1,
+    Cabin.PREMIUM_ECONOMY: 2,
+    Cabin.BUSINESS: 3,
+    Cabin.FIRST: 4,
+}
+
 __all__ = [
     "AMADEUS_CABIN",
+    "DUFFEL_CABIN",
     "KIWI_CABIN",
+    "SERPAPI_CABIN",
     "Cabin",
     "CacheConfig",
     "Config",

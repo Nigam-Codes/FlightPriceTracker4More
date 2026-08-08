@@ -1,0 +1,80 @@
+{
+  "search_metadata": { "status": "Success" },
+  "search_parameters": {
+    "engine": "google_flights",
+    "departure_id": "JFK",
+    "arrival_id": "DEN",
+    "outbound_date": "2025-09-11",
+    "return_date": "2025-09-14",
+    "currency": "USD",
+    "type": "1"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "time": "2025-09-11 14:30"
+          },
+          "arrival_airport": {
+            "name": "Denver International Airport",
+            "id": "DEN",
+            "time": "2025-09-11 17:00"
+          },
+          "duration": 270,
+          "airline": "United",
+          "flight_number": "UA 1701",
+          "travel_class": "Economy"
+        }
+      ],
+      "total_duration": 270,
+      "price": 300,
+      "type": "Round trip",
+      "departure_token": "tok_ua"
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "time": "2025-09-11 15:10"
+          },
+          "arrival_airport": {
+            "name": "O'Hare International Airport",
+            "id": "ORD",
+            "time": "2025-09-11 16:55"
+          },
+          "duration": 105,
+          "airline": "American",
+          "flight_number": "AA 355",
+          "travel_class": "Economy"
+        },
+        {
+          "departure_airport": {
+            "name": "O'Hare International Airport",
+            "id": "ORD",
+            "time": "2025-09-11 18:20"
+          },
+          "arrival_airport": {
+            "name": "Denver International Airport",
+            "id": "DEN",
+            "time": "2025-09-11 20:05"
+          },
+          "duration": 105,
+          "airline": "American",
+          "flight_number": "AA 612",
+          "travel_class": "Economy"
+        }
+      ],
+      "total_duration": 415,
+      "price": 402,
+      "type": "Round trip",
+      "departure_token": "tok_aa"
+    }
+  ]
+}

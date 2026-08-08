@@ -1,0 +1,83 @@
+{
+  "data": {
+    "id": "orq_test_0001",
+    "offers": [
+      {
+        "id": "off_test_0001",
+        "total_amount": "300.00",
+        "total_currency": "USD",
+        "slices": [
+          {
+            "duration": "PT4H30M",
+            "segments": [
+              {
+                "origin": { "iata_code": "JFK" },
+                "destination": { "iata_code": "DEN" },
+                "departing_at": "2025-09-11T14:30:00",
+                "arriving_at": "2025-09-11T17:00:00",
+                "marketing_carrier": { "iata_code": "UA" }
+              }
+            ]
+          },
+          {
+            "duration": "PT3H45M",
+            "segments": [
+              {
+                "origin": { "iata_code": "DEN" },
+                "destination": { "iata_code": "JFK" },
+                "departing_at": "2025-09-14T18:00:00",
+                "arriving_at": "2025-09-14T20:30:00",
+                "marketing_carrier": { "iata_code": "UA" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "off_test_0002",
+        "total_amount": "402.75",
+        "total_currency": "USD",
+        "slices": [
+          {
+            "duration": "PT6H50M",
+            "segments": [
+              {
+                "origin": { "iata_code": "JFK" },
+                "destination": { "iata_code": "ORD" },
+                "departing_at": "2025-09-11T15:10:00",
+                "arriving_at": "2025-09-11T16:55:00",
+                "marketing_carrier": { "iata_code": "AA" }
+              },
+              {
+                "origin": { "iata_code": "ORD" },
+                "destination": { "iata_code": "DEN" },
+                "departing_at": "2025-09-11T18:20:00",
+                "arriving_at": "2025-09-11T20:05:00",
+                "marketing_carrier": { "iata_code": "AA" }
+              }
+            ]
+          },
+          {
+            "duration": "PT6H10M",
+            "segments": [
+              {
+                "origin": { "iata_code": "DEN" },
+                "destination": { "iata_code": "ORD" },
+                "departing_at": "2025-09-14T16:00:00",
+                "arriving_at": "2025-09-14T19:25:00",
+                "marketing_carrier": { "iata_code": "AA" }
+              },
+              {
+                "origin": { "iata_code": "ORD" },
+                "destination": { "iata_code": "JFK" },
+                "departing_at": "2025-09-14T20:40:00",
+                "arriving_at": "2025-09-14T23:10:00",
+                "marketing_carrier": { "iata_code": "AA" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

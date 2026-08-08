@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}converge-flights{% endblock %}</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --text: #16191d;
+    --muted: #5b6472;
+    --border: #dfe3e8;
+    --accent: #1f6feb;
+    --accent-fg: #ffffff;
+    --good: #157347;
+    --bad: #b42318;
+    --warn-bg: #fff6e5;
+    --warn-border: #f0c36d;
+    --row-alt: #fafbfc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a20; --text: #e7eaee; --muted: #9aa4b2;
+      --border: #2a2f39; --accent: #4d8ef7; --accent-fg: #0b1220;
+      --good: #4ade80; --bad: #f87171;
+      --warn-bg: #2a2313; --warn-border: #6b5420; --row-alt: #1b1f26;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem; background: var(--bg); color: var(--text);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  header h1 { margin: 0 0 .25rem; font-size: 1.6rem; letter-spacing: -.02em; }
+  header p { margin: 0 0 1.5rem; color: var(--muted); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  label { display: block; font-weight: 600; margin-bottom: .3rem; }
+  .hint { font-weight: 400; color: var(--muted); font-size: .85rem; }
+  input, select, textarea {
+    width: 100%; padding: .55rem .7rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--bg); color: var(--text);
+    font: inherit;
+  }
+  textarea { min-height: 5.5rem; resize: vertical; font-family: ui-monospace, monospace; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .field { margin-bottom: 1rem; }
+  button {
+    background: var(--accent); color: var(--accent-fg); border: 0;
+    padding: .7rem 1.4rem; border-radius: 8px; font: inherit; font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(1.08); }
+  a { color: var(--accent); }
+  .error, .warn {
+    border-radius: 8px; padding: .8rem 1rem; margin-bottom: 1.25rem;
+  }
+  .error { background: var(--warn-bg); border: 1px solid var(--bad); color: var(--bad); }
+  .warn { background: var(--warn-bg); border: 1px solid var(--warn-border); }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+  th, td { padding: .55rem .7rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .best { color: var(--good); font-weight: 700; }
+  .none { color: var(--bad); }
+  .muted { color: var(--muted); }
+  footer { color: var(--muted); font-size: .85rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>converge-flights</h1>
+    <p>{% block subtitle %}Compare group flights from different origins to one destination.{% endblock %}</p>
+  </header>
+  {% block content %}{% endblock %}
+  <footer>Fares come from the configured provider API. Search only &mdash; no booking.</footer>
+</div>
+</body>
+</html>

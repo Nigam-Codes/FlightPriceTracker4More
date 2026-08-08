@@ -39,8 +39,16 @@ constraints:
   cabin: economy
   currency: USD
 
-# amadeus | kiwi | both
-provider: both
+# Which backend(s) to run. Either a single value:
+#   provider: serpapi        # or: amadeus | kiwi | duffel
+#   provider: both           # alias for [amadeus, kiwi]
+# ...or a list to run several and keep the cheapest qualifying offer per
+# traveler across all of them:
+#
+# Note (2026): Amadeus Self-Service shut down and Kiwi/Tequila is partner-only.
+# The self-serve options that still work are `serpapi` (real Google Flights
+# fares) and `duffel`.
+provider: [serpapi, duffel]
 
 cache:
   enabled: true
