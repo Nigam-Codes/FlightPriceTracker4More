@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from typing import Annotated
 
+import httpx
 import typer
 from dotenv import load_dotenv
 from rich.console import Console
@@ -160,6 +161,16 @@ def search(
     except ProviderError as exc:
         console.print(f"[red]Provider error:[/] {exc}")
         raise typer.Exit(code=4) from exc
+    except httpx.TransportError as exc:
+        # Network/proxy/DNS failure that survived the retry+backoff in
+        # request_with_backoff. Report it plainly instead of dumping a
+        # traceback at the user.
+        console.print(
+            f"[red]Network error reaching the provider:[/] {type(exc).__name__}: {exc}\n"
+            "Check your connection, any HTTP(S) proxy, and that the provider's "
+            "host is reachable from this machine."
+        )
+        raise typer.Exit(code=5) from exc
 
     console.print(render_table(report, traveler_names))
 
