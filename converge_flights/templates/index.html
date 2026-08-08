@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if error %}<div class="error"><strong>Couldn't run that search.</strong><br>{{ error }}</div>{% endif %}
+
+<form method="post" action="/search">
+  <div class="panel">
+    <div class="field">
+      <label for="travelers">Travelers
+        <span class="hint">&mdash; one per line, <code>Name: AIRPORT, AIRPORT</code>. The cheapest qualifying airport wins.</span>
+      </label>
+      <textarea id="travelers" name="travelers" required>{{ defaults.travelers }}</textarea>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="destination">Destination <span class="hint">&mdash; IATA code</span></label>
+        <input id="destination" name="destination" value="{{ defaults.destination }}" required>
+      </div>
+      <div class="field">
+        <label for="provider">Provider</label>
+        <select id="provider" name="provider">
+          {% for value, text in [
+            ("serpapi", "SerpApi (Google Flights)"),
+            ("duffel", "Duffel"),
+            ("amadeus", "Amadeus (legacy)"),
+            ("kiwi", "Kiwi/Tequila (legacy)")
+          ] %}
+          <option value="{{ value }}" {% if defaults.provider == value %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="windows">Date windows
+        <span class="hint">&mdash; one per line, <code>YYYY-MM-DD to YYYY-MM-DD</code>. Must be in the future.</span>
+      </label>
+      <textarea id="windows" name="windows" required>{{ defaults.windows }}</textarea>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="max_stops">Max stops</label>
+        <input id="max_stops" name="max_stops" type="number" min="0" max="3" value="{{ defaults.max_stops }}">
+      </div>
+      <div class="field">
+        <label for="max_duration_hours">Max hours <span class="hint">/ direction</span></label>
+        <input id="max_duration_hours" name="max_duration_hours" type="number" step="0.5" min="1" value="{{ defaults.max_duration_hours }}">
+      </div>
+      <div class="field">
+        <label for="cabin">Cabin</label>
+        <select id="cabin" name="cabin">
+          {% for value, text in [
+            ("economy", "Economy"), ("premium_economy", "Premium economy"),
+            ("business", "Business"), ("first", "First")
+          ] %}
+          <option value="{{ value }}" {% if defaults.cabin == value %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="currency">Currency</label>
+        <input id="currency" name="currency" value="{{ defaults.currency }}" maxlength="3">
+      </div>
+    </div>
+
+    <button type="submit">Search fares</button>
+  </div>
+</form>
+
+<div class="panel">
+  <strong>Before you search:</strong>
+  <ul class="muted" style="margin:.5rem 0 0; padding-left:1.2rem;">
+    <li>The server needs the provider's API key in its environment (e.g. <code>SERPAPI_API_KEY</code>). It is never sent to your browser.</li>
+    <li>Each traveler-origin &times; window costs roughly two provider calls &mdash; mind free-tier quotas.</li>
+    <li>Repeat searches are served from an on-disk cache, so they don't burn quota.</li>
+  </ul>
+</div>
+
+{% endblock %}

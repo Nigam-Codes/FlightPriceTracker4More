@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Results &mdash; converge-flights{% endblock %}
+{% block subtitle %}
+  Ranked by total group cost to <strong>{{ destination }}</strong>
+  &middot; via {{ providers }} &middot; {{ generated_at }}
+{% endblock %}
+{% block content %}
+
+{% if past_dates %}
+<div class="warn">
+  <strong>Some departures are in the past</strong> ({{ past_dates|join(", ") }}).
+  Providers return no fares for past dates &mdash; use future windows.
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Depart</th><th>Return</th>
+          <th class="num">Group total</th>
+          {% for name in traveler_names %}<th class="num">{{ name }}</th>{% endfor %}
+          <th class="num">vs. worst</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for w in ranked %}
+        <tr>
+          <td class="num">{{ loop.index }}</td>
+          <td>{{ w.window.depart }}</td>
+          <td>{{ w.window.return_ }}</td>
+          <td class="num">
+            {% if w.group_total is not none %}
+              <span class="{% if loop.first %}best{% endif %}">
+                {{ "%.2f"|format(w.group_total) }} {{ report.currency }}
+              </span>
+            {% else %}<span class="none">&mdash;</span>{% endif %}
+          </td>
+          {% for name in traveler_names %}
+            {% set r = w.per_traveler.get(name) %}
+            {% set o = r.best_offer if r else None %}
+            <td class="num">
+              {% if o %}
+                {{ "%.0f"|format(o.price) }}
+                <span class="hint">{{ o.provider }}/{{ o.origin }}</span>
+              {% else %}<span class="none">none</span>{% endif %}
+            </td>
+          {% endfor %}
+          <td class="num">
+            {% if w.group_total is not none and baseline is not none %}
+              {{ "%.0f"|format(baseline - w.group_total) }}
+            {% else %}<span class="muted">&mdash;</span>{% endif %}
+          </td>
+          <td>
+            {% if w.missing %}
+              <span class="none">no option: {{ w.missing|join(", ") }}</span>
+            {% else %}<span class="muted">&mdash;</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <a href="/download/{{ download_token }}"><strong>Download .xlsx</strong></a>
+  <span class="hint">&mdash; per-traveler fares, comparison with savings, and a dashboard with charts.</span>
+  <p style="margin:.75rem 0 0"><a href="/">&larr; New search</a></p>
+</div>
+
+{% endblock %}

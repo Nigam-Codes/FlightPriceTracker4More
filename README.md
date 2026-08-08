@@ -18,6 +18,8 @@ can pick the cheapest weekend to travel.
   source.
 - **Outputs:** a ranked terminal table (`rich`), an Excel workbook with charts
   (`openpyxl`), and an optional raw-JSON dump per provider.
+- **CLI or web app:** run it from the terminal, or serve the same engine as a
+  small FastAPI web app you can host (see [Web app](#web-app-hosted)).
 
 ---
 
@@ -127,6 +129,35 @@ KIWI_API_KEY=xxxxxxxxxxxxxxxx
 
 If the selected provider's key is missing, the tool fails with a clear
 message telling you exactly which variable to set.
+
+## Web app (hosted)
+
+Prefer a browser to a terminal? The same engine ships as a small FastAPI app:
+a form describes the group and the trip, the **server** runs the search, and you
+get the ranked comparison plus the `.xlsx` download.
+
+```bash
+pip install -e ".[web]"
+uvicorn converge_flights.web:app --reload     # http://127.0.0.1:8000
+```
+
+**API keys stay on the server.** The page posts a plain HTML form; keys are read
+from the server's environment and never reach the browser (never put a SerpApi
+key in client-side JavaScript).
+
+### Deploy it
+
+The repo includes ready-made config — set `SERPAPI_API_KEY` in the host's
+environment (never commit it):
+
+| Host | How |
+| --- | --- |
+| **Render** | `render.yaml` is a blueprint: New → Blueprint → point at this repo. It prompts for `SERPAPI_API_KEY`. |
+| **Docker** (Fly.io, Cloud Run, anywhere) | `docker build -t converge-flights .` then `docker run -p 8000:8000 -e SERPAPI_API_KEY=... converge-flights` |
+| **Heroku-style** | `Procfile` is included. |
+
+Routes: `/` (form), `/search` (results), `/download/{token}` (workbook),
+`/healthz` (liveness probe), `/api/docs` (OpenAPI).
 
 ## Configure
 
@@ -252,6 +283,8 @@ converge_flights/
 ├── export.py            # .xlsx export with charts (openpyxl)
 ├── cache.py             # on-disk query cache
 ├── cli.py               # typer CLI (converge-flights search ...)
+├── web.py               # FastAPI web app (form -> results -> xlsx)
+├── templates/           # Jinja templates for the web app
 └── providers/
     ├── base.py          # FlightProvider protocol + HTTP backoff helper
     ├── amadeus.py       # Amadeus Self-Service provider (legacy)

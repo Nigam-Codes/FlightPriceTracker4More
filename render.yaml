@@ -1,0 +1,19 @@
+# One-click deploy config for Render (https://render.com).
+#
+# The API key is marked sync:false so Render prompts for it in the dashboard
+# instead of storing it in this repo.
+services:
+  - type: web
+    name: converge-flights
+    runtime: python
+    plan: free
+    buildCommand: pip install ".[web]"
+    startCommand: uvicorn converge_flights.web:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: SERPAPI_API_KEY
+        sync: false
+      - key: DUFFEL_API_TOKEN
+        sync: false
